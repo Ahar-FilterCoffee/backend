@@ -65,6 +65,41 @@ def makePost(request):
             "message":"failed",
             "exception":str(e)
         },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['GET'])
+def getPosts(request):
+    try:
+        data=request.data
+        p=Post.objects.all()
+        postData=[]
+        statusCheck={
+            0:"Not Booked",
+            1:"Delivering",
+            2:"Delivered"
+        }
+        for i in p:
+            postData.append({
+                "name":i.fromUser.orgName,
+                "quantity":i.quantity,
+                "status":statusCheck[i.status]
+            })
+        return Response(data={
+            "message":"success",
+            "posts":postData
+        },status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(data={
+            "message":"failed",
+            "exeption":str(e)
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+    
+
+@api_view(['POST'])
+def bestPosts(request):
+    pass
+@api_view(["POST"])
+def acceptPost(request):
+    pass
 
 
