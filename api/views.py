@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Profile
 from .serielizers import LoginSerielizer,SignUpSerielizer
+from django.forms.models import model_to_dict
 
 # Create your views here.
 
@@ -15,10 +16,12 @@ def login(request):
         password=data.validated_data['password']
         try:
             obj=Profile.objects.get(username=username)
-            return Response(data={
+            fin={
                 "message":"success",
-                "id":obj.id
-            },status=status.HTTP_200_OK)
+            }
+            fin.update(model_to_dict(obj))
+            
+            return Response(data=fin,status=status.HTTP_200_OK)
         except Exception as e:
             return Response(data={
                 "message":str(e),

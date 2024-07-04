@@ -8,3 +8,8 @@ class Profile(models.Model):
     pic=models.URLField(default=None,null=True)
     location=models.TextField()
     userType=models.CharField(max_length=20)
+class Post(models.Model):
+    fromUser=models.ForeignKey(Profile,on_delete=models.PROTECT,related_name="fromUser")
+    toUser=models.OneToOneField(Profile,on_delete=models.PROTECT,default=None,null=True,related_name="toUser")
+    quantity=models.FloatField()
+    status=models.IntegerField()#0 - not applied, 1 - delivering, 2 - delivered
