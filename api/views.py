@@ -35,9 +35,10 @@ def login(request):
 def signup(request):
     data=SignUpSerielizer(data=request.data)
     if data.is_valid():
-        data.save()
+        saved_data=data.save()
         return Response(data={
-            "message":"success"
+            "message":"success",
+            "id":saved_data.id
         },status=status.HTTP_201_CREATED)
     else:
         return Response(data.errors,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
