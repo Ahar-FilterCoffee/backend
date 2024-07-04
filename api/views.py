@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Profile
+from .models import Profile,Post
 from .serielizers import LoginSerielizer,SignUpSerielizer
 from django.forms.models import model_to_dict
 
@@ -47,6 +47,24 @@ def signup(request):
     else:
         return Response(data.errors,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#producer
+@api_view(['POST'])
+def makePost(request):
+    #id -> fromUser, quatity,
+    try:
+        data=request.data
+        
+        user=Profile.objects.get(id=data["id"])
+        p=Post(fromUser=user,quantity=data["quantity"],status=0)
+        p.save()
+        return Response(data={
+            "message":"success"
+        },status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response(data={
+            "message":"failed",
+            "exception":str(e)
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
