@@ -55,7 +55,7 @@ def makePost(request):
         data=request.data
         
         user=Profile.objects.get(id=data["id"])
-        p=Post(fromUser=user,quantity=data["quantity"],status=0)
+        p=Post(fromUser=user,quantity=data["quantity"],status=0,img=data["img"],foodType=data["foodType"],foodQuantity=data["foodQuantity"])
         p.save()
         return Response(data={
             "message":"success"
@@ -78,9 +78,11 @@ def getPosts(request):
         }
         for i in p:
             postData.append({
+                "id":i.id,
                 "name":i.fromUser.orgName,
                 "quantity":i.quantity,
-                "status":statusCheck[i.status]
+                "status":statusCheck[i.status],
+                "img":i.img
             })
         return Response(data={
             "message":"success",
@@ -101,5 +103,25 @@ def bestPosts(request):
 @api_view(["POST"])
 def acceptPost(request):
     pass
+@api_view(["POST"])
+def postDetails(request):
+    data=request.data 
+    try:
+        post=Post.objects.get(id=data["id"])
+        fin=model_to_dict(post,fields=["id","quantity","img","foodType","foodQuantity"])
+        statusCheck={
+            0:"Not Booked",
+            1:"Delivering",
+            2:"Delivered"
+        }
+        fin["status"]=statusCheck[post.status]
+        fin["name"]=post.fromUser.orgName
+        fin["message"]="success"
+        return Response(fin,status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "message":"failed",
+            "error":str(e)
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

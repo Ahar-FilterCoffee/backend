@@ -13,3 +13,6 @@ class Post(models.Model):
     toUser=models.OneToOneField(Profile,on_delete=models.PROTECT,default=None,null=True,related_name="toUser")
     quantity=models.FloatField()
     status=models.IntegerField()#0 - not applied, 1 - delivering, 2 - delivered
+    img=models.URLField(default=None,null=True)
+    foodType=models.CharField(max_length=50,default=None,null=True)
+    foodQuantity=models.FloatField(default=None,null=True)
