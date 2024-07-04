@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Profile,Post
+from .models import Profile,Post,Consumer,Producer
 from .serielizers import LoginSerielizer,SignUpSerielizer
 from django.forms.models import model_to_dict
 
@@ -38,14 +38,23 @@ def login(request):
 @api_view(['POST'])
 def signup(request):
     data=SignUpSerielizer(data=request.data)
-    if data.is_valid():
-        saved_data=data.save()
+    try:
+        if data.is_valid():
+            saved_data=data.save()
+            if saved_data.userType=="Consumer":
+                Consumer(user=saved_data,feedNo=request.data["feedNo"]).save()
+            elif saved_data.userType=="Producer":
+                Producer(user=saved_data).save()
+            return Response(data={
+                "message":"success",
+                "id":saved_data.id
+            },status=status.HTTP_201_CREATED)
+        else:
+            return Response(data.errors,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
         return Response(data={
-            "message":"success",
-            "id":saved_data.id
-        },status=status.HTTP_201_CREATED)
-    else:
-        return Response(data.errors,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            "error":str(e)
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #producer
 @api_view(['POST'])
@@ -93,13 +102,6 @@ def getPosts(request):
             "message":"failed",
             "exeption":str(e)
         },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-    
-
-@api_view(['POST'])
-def bestPosts(request):
-    pass
 @api_view(["POST"])
 def acceptPost(request):
     pass
@@ -124,4 +126,33 @@ def postDetails(request):
             "error":str(e)
         },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#Best post calculations
+def distanceCalc(p1,p2): #p -> [x,y]
+    return ((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)**(1/2)
+def ratingCalc(up,noUp,down,noDown):
+    return up*noUp+down*noDown
+@api_view(['POST'])
+def bestPosts(request): #User id
+    #Score dict - postID:score
+    try:
+        scores={}
+        posts=Post.objects.all()
+        user=Profile.objects.get(id=request.data["id"])
+        print(user)
+        cons=user.user_consumer
+        for p in posts:
+            fromUser=p.fromUser
+            prod=fromUser.user_producer
+            dist=distanceCalc([fromUser.locx,fromUser.locy],[user.locx,user.locy])
+            if  prod.delivered==0 or prod.rating==0:
+                s=0.5*dist+0.5* cons.feedNp
+            else:
+                s=0.3*dist+0.2*cons.rating+0.5*cons.feedNp
+            scores[p.id]=s
+            return Response(scores,status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "error":str(e)
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 

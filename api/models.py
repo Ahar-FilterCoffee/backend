@@ -8,6 +8,8 @@ class Profile(models.Model):
     pic=models.URLField(default=None,null=True)
     location=models.TextField()
     userType=models.CharField(max_length=20)
+    locx=models.FloatField(default=0.0)
+    locy=models.FloatField(default=0.0)
 class Post(models.Model):
     fromUser=models.ForeignKey(Profile,on_delete=models.PROTECT,related_name="fromUser")
     toUser=models.OneToOneField(Profile,on_delete=models.PROTECT,default=None,null=True,related_name="toUser")
@@ -16,3 +18,10 @@ class Post(models.Model):
     img=models.URLField(default=None,null=True)
     foodType=models.CharField(max_length=50,default=None,null=True)
     foodQuantity=models.FloatField(default=None,null=True)
+class Producer(models.Model):
+    user=models.OneToOneField(Profile,on_delete=models.CASCADE,related_name="user_producer")
+    rating=models.IntegerField(default=0)
+    delivered=models.IntegerField(default=0)
+class Consumer(models.Model):
+    user=models.OneToOneField(Profile,on_delete=models.CASCADE,related_name="user_consumer")
+    feedNo=models.IntegerField(default=0)
